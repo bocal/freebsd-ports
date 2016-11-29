@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# PROVIDE: disque
+# REQUIRE: LOGIN
+# BEFORE:  securelevel
+# KEYWORD: shutdown
+
+# Add the following line to /etc/rc.conf to enable `disque':
+#
+#disque_enable="YES"
+#
+
+. /etc/rc.subr
+
+name="disque"
+rcvar="${name}_enable"
+
+extra_commands="reload"
+
+command="%%PREFIX%%/bin/disque-server"
+pidfile="%%DISQUE_RUNDIR%%/$name.pid"
+
+# read configuration and set defaults
+load_rc_config "$name"
+: ${disque_enable="NO"}
+: ${disque_user="%%DISQUE_USER%%"}
+: ${disque_config="%%PREFIX%%/etc/$name.conf"}
+
+command_args="${disque_config}"
+required_files="${disque_config}"
+
+_profile_exists() {
+	for _p in ${disque_profiles}; do
+		[ "${_p}" = "$1" ] && return 1;
+	done
+	return 0
+}
+
+if [ $# -eq 2 ]; then
+	_profile=$2
+	_profile_exists $_profile
+	_exists=$?
+	[ ${_exists} -ne 1 ] && {
+		echo "`basename %%PREFIX%%/etc/rc.d/disque`: no '$2' in 'disque_profiles'"
+		exit 1
+	};
+	echo "-- Profile: ${_profile} --"
+	config_file="%%PREFIX%%/etc/${name}-${_profile}.conf"
+	command_args="${config_file}"
+	pidfile="%%DISQUE_RUNDIR%%/${_profile}.pid"
+	required_files="${config_file}"
+elif [ -n "${disque_profiles}" ]; then
+	_swap=$*; shift; _profiles=$*
+	_profiles=${_profiles:-${disque_profiles}}
+	set -- ${_swap}
+	for _profile in ${_profiles}; do
+		%%PREFIX%%/etc/rc.d/disque $1 ${_profile}
+	done
+	exit 0
+fi
+
+run_rc_command "$1"

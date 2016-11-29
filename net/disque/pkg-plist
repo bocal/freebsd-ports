@@ -1,0 +1,6 @@
+bin/disque
+bin/disque-server
+@sample(%%DISQUE_USER%%,%%DISQUE_GROUP%%,) etc/disque.conf.sample
+@dir(%%DISQUE_USER%%,%%DISQUE_GROUP%%,) %%DISQUE_DBDIR%%
+@dir(%%DISQUE_USER%%,%%DISQUE_GROUP%%,) %%DISQUE_LOGDIR%%
+@dir(%%DISQUE_USER%%,%%DISQUE_GROUP%%,) %%DISQUE_RUNDIR%%
